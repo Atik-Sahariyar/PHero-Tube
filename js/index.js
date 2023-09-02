@@ -11,10 +11,11 @@ const handleCategory = async () => {
     categorys.forEach((category) => {
         let div = document.createElement('div');
         div.innerHTML = `
-        <button onclick = "handleLoadVideos('${category.category_id}')" class="px-3 py-2 rounded-md bg-gray-200">${category.category}</button>
+        <button id ="category-button" onclick = "handleLoadVideos('${category.category_id}') "  class="px-3 py-2 rounded-md bg-gray-200">${category.category}</button>
         `;
         categoryName.appendChild(div);
     });
+ 
 };
 
 document.getElementById('sort-by-view').addEventListener('click', () => {
@@ -32,13 +33,38 @@ const handleLoadVideos = async (categoryId) => {
         `https://openapi.programming-hero.com/api/videos/category/${categoryId}`
     );
     const data = await response.json();
-    console.log(data.data);
+     
 
     videoData = [...data.data];
     renderVideo();
+
+    //if No data found
+    const emptyData = () =>{
+        const cardsContainer = document.getElementById('empty-data');
+        cardsContainer.innerHTML = '';
+        const div = document.createElement('div');
+        cardsContainer.appendChild(div);
+        if(data.data.length === 0){
+          
+            const div2 = document.createElement('div');
+            div2.classList.add("flex", "text-center", "justify-center")
+             div2.innerHTML = `
+             <div class =" mt-20">
+             <img src="./js/not-found.png" alt="" class = "w-16 h-16 ml-14 mb-3">
+             <p>Oops!! Sorry, There is no <br> content here</p>
+             </div>
+             `
+             div.appendChild(div2);
+            }   
+    }
+    emptyData();
+
+   
+    
 };
 
 const renderVideo = () => {
+   
     const cardContainer = document.getElementById('card-container');
     cardContainer.innerHTML = '';
     videoData?.forEach((videoData) => {
@@ -51,7 +77,7 @@ const renderVideo = () => {
                          <figure class =" ">
                            <img src=${videoData?.thumbnail} alt="" class = "w-[394px] h-[190px] rounded-lg ">
                           </figure>
-                         <p class = "text-end relative mr-3 ml-auto -mt-7 "> <span id = "upload-time" class =" text-white w-auto px-1 bg-black rounded">${uploadTime}</span> </p>
+                         <p class = "text-end relative mr-3 ml-auto -mt-7 "> <span id = "upload-time" class =" text-white w-auto px-1 ${uploadTime?' bg-black': ''} rounded">${uploadTime?uploadTime: ''}</span> </p>
                          </div>
                    
                                <div class="avater online flex gap-2 p-2">
@@ -60,22 +86,22 @@ const renderVideo = () => {
                                    </div>
                                    <div>
                                     <h4 class="font-bold ">${videoData?.title}<h4>
+                                    <div class = "flex gap-1">
                                     <p>${videoData?.authors[0]?.profile_name}</p>
+                                    ${videoData?.authors[0]?.verified? `<img src="./js/verify.png" class = "w-6 h-6" alt="">`: ''}
+                                    </div>
                                     <p>${videoData?.others?.views} views</p>
                                    </div>
                                </div>
             </div>
            `;
         cardContainer.appendChild(div);
-        console.log(videoData)
         // find upload time
         function uploadDate() {
             const uploadTime = parseFloat(videoData?.others?.posted_date);
             const hours = Math.floor(uploadTime / 3600);
             const minutes = Math.floor((uploadTime % 3600) / 60);
             let time = hours + 'hrs ' + minutes + 'min ago';
-
-            console.log(hours);
             if (isNaN(uploadTime)) {
                 return;
             }
@@ -83,8 +109,9 @@ const renderVideo = () => {
                 return time;
             }
         }
-        console.log(uploadTime);
     });
 };
+
+
 
 handleCategory();
